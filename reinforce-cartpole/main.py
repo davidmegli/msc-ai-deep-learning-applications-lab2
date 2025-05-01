@@ -13,10 +13,11 @@ def parse_args():
     parser.add_argument('--gamma', type=float, default=0.99, help='Discount factor for future rewards')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
     parser.add_argument('--episodes', type=int, default=1000, help='Number of training episodes')
+    parser.add_argument('--eval_every', type=int, default=50, help='Evaluate agent every N episodes')
+    parser.add_argument('--eval_episodes', type=int, default=5, help='Number of episodes to use in each evaluation')
     parser.add_argument('--visualize', action='store_true', help='Visualize final agent')
     parser.set_defaults(visualize=True)
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 # Main entry point.
@@ -42,7 +43,17 @@ if __name__ == "__main__":
     policy = PolicyNet(env,n_hidden=1)
 
     # Train the agent.
-    reinforce(policy, env, run, lr=args.lr, baseline=args.baseline, num_episodes=args.episodes, gamma=args.gamma)
+    reinforce(
+        policy,
+        env,
+        run,
+        lr=args.lr,
+        baseline=args.baseline,
+        num_episodes=args.episodes,
+        gamma=args.gamma,
+        eval_every=args.eval_every,
+        eval_episodes=args.eval_episodes
+    )
 
     # And optionally run the final agent for a few episodes.
     if args.visualize:

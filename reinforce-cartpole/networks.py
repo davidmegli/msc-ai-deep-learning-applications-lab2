@@ -65,6 +65,7 @@ class PolicyNet(nn.Module):
         hidden_layers += [nn.Linear(width, width), nn.ReLU()] * (n_hidden - 1)
         self.hidden = nn.Sequential(*hidden_layers)
         self.out = nn.Linear(width, env.action_space.n)
+        self.softmax = nn.Softmax(dim=-1)
 
     def forward(self, s):
         """
@@ -77,5 +78,6 @@ class PolicyNet(nn.Module):
             torch.Tensor: The softmax probabilities over the action space.
         """
         s = self.hidden(s)
-        s = F.softmax(self.out(s), dim=-1)
+        s = self.out(s)
+        s = self.softmax(s)
         return s
