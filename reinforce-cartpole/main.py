@@ -16,6 +16,7 @@ def parse_args():
     parser.add_argument('--eval_every', type=int, default=50, help='Evaluate agent every N episodes')
     parser.add_argument('--eval_episodes', type=int, default=5, help='Number of episodes to use in each evaluation')
     parser.add_argument('--visualize', action='store_true', help='Visualize final agent')
+    parser.add_argument('--env', type=str, default='cartpole', help='environment to use (cartpole, lunarlander)')
     parser.set_defaults(visualize=True)
     return parser.parse_args()
 
@@ -36,9 +37,16 @@ if __name__ == "__main__":
         }
     )
 
-    # Instantiate the Cartpole environment (no visualization).
-    env = gymnasium.make('CartPole-v1')
+    environment = ''
+    if args.env.lower() == 'cartpole':
+        environment = 'CartPole-v1'
+    elif args.env.lower() == 'lunarlander':
+        environment = 'LunarLander-v3'
+    else:
+        raise ValueError(f'Unknown environment {args.env}')
 
+    # Instantiate the Cartpole environment (no visualization).
+    env = gymnasium.make(environment)
     # Make a policy network.
     policy = PolicyNet(env, n_hidden=1)
 
@@ -65,7 +73,7 @@ if __name__ == "__main__":
 
     # And optionally run the final agent for a few episodes.
     if args.visualize:
-        env_render = gymnasium.make('CartPole-v1', render_mode='human')
+        env_render = gymnasium.make(environment, render_mode='human')
         for _ in range(10):
             run_episode(env_render, policy)
 
