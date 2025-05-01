@@ -9,7 +9,7 @@ def parse_args():
     """The argument parser for the main training script."""
     parser = argparse.ArgumentParser(description='A script implementing REINFORCE on the Cartpole environment.')
     parser.add_argument('--project', type=str, default='DLA2025-Cartpole', help='Wandb project to log to.')
-    parser.add_argument('--baseline', type=str, default='none', help='Baseline to use (none, std)')
+    parser.add_argument('--baseline', type=str, default='none', help='Baseline to use (none, std, value)')
     parser.add_argument('--gamma', type=float, default=0.99, help='Discount factor for future rewards')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
     parser.add_argument('--episodes', type=int, default=1000, help='Number of training episodes')
@@ -40,7 +40,15 @@ if __name__ == "__main__":
     env = gymnasium.make('CartPole-v1')
 
     # Make a policy network.
-    policy = PolicyNet(env,n_hidden=1)
+    policy = PolicyNet(env, n_hidden=1)
+
+    # If using value baseline, also create a value network
+    if args.baseline == 'value':
+        from networks import ValueNet
+        value_net = ValueNet(env, n_hidden=1)
+    else:
+        value_net = None
+
 
     # Train the agent.
     reinforce(
@@ -52,8 +60,8 @@ if __name__ == "__main__":
         num_episodes=args.episodes,
         gamma=args.gamma,
         eval_every=args.eval_every,
-        eval_episodes=args.eval_episodes
-    )
+        eval_episodes=args.eval_episodes,
+        value_net=value_net)
 
     # And optionally run the final agent for a few episodes.
     if args.visualize:

@@ -8,7 +8,7 @@ from common import run_episode, compute_returns, select_action
 # 2. Standardization Baseline
 # 3. Value Baseline (esercizio 3)
 def reinforce(policy, env, run, gamma=0.99, lr=0.02, baseline='std',
-              num_episodes=10, eval_every=10, eval_episodes=5):
+              num_episodes=10, eval_every=10, eval_episodes=5, value_net=None):
     """
     REINFORCE with optional evaluation every N episodes.
 
@@ -28,8 +28,15 @@ def reinforce(policy, env, run, gamma=0.99, lr=0.02, baseline='std',
         eval_metrics: List of dicts with evaluation stats (reward, length).
     """
     # Check for valid baseline (should probably be done elsewhere).
-    if baseline not in ['none', 'std']:
+    if baseline not in ['none', 'std', 'value']:
         raise ValueError(f'Unknown baseline {baseline}')
+    
+    if baseline == 'value':
+        if value_net is None:
+            raise ValueError("Value baseline selected, but value_net is None")
+        value_net.train()
+        value_opt = torch.optim.Adam(value_net.parameters(), lr=lr)
+
 
     # The only non-vanilla part: we use Adam instead of SGD.
     opt = torch.optim.Adam(policy.parameters(), lr=lr)
@@ -68,12 +75,26 @@ def reinforce(policy, env, run, gamma=0.99, lr=0.02, baseline='std',
             base_returns = returns
         elif baseline == 'std': # Standardization: subtracting mean, dividing by std
             base_returns = (returns - returns.mean()) / returns.std()
+        elif baseline == 'value':
+            # Estimate value for each state and use it as baseline
+            states = torch.stack(observations)  # shape: (T, obs_dim)
+            values = value_net(states.detach())  # No gradients through states
+            advantages = returns - values.detach()
+            base_returns = advantages
 
         # Make an optimization step on the policy network.
         opt.zero_grad()
         policy_loss = (-log_probs * base_returns).mean()
         policy_loss.backward()
         opt.step()
+
+        # Also train the value network (MSE loss)
+        if baseline == 'value':
+            value_opt.zero_grad()
+            value_loss = torch.nn.functional.mse_loss(values, returns)
+            value_loss.backward()
+            value_opt.step()
+            log['value_loss'] = value_loss.item()
 
         # Log the current loss
         log['policy_loss'] = policy_loss.item()

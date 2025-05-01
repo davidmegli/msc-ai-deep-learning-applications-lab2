@@ -81,3 +81,15 @@ class PolicyNet(nn.Module):
         s = self.out(s)
         s = self.softmax(s)
         return s
+
+class ValueNet(nn.Module):
+    def __init__(self, env, n_hidden=1, width=128):
+        super().__init__()
+        hidden_layers = [nn.Linear(env.observation_space.shape[0], width), nn.ReLU()]
+        hidden_layers += [nn.Linear(width, width), nn.ReLU()] * (n_hidden - 1)
+        self.hidden = nn.Sequential(*hidden_layers)
+        self.out = nn.Linear(width, 1)  # Output scalar value
+
+    def forward(self, s):
+        s = self.hidden(s)
+        return self.out(s).squeeze(-1)  # Output shape: (batch,) not (batch,1)
