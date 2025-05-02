@@ -1,6 +1,6 @@
 '''
 Author: David Megli
-Date: 2025-05-05
+Date: 2025-05-02
 File: dqn.py
 Description: Main Deep Q-Network Algorithm (training loop)
 '''
