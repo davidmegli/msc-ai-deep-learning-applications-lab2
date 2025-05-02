@@ -54,6 +54,7 @@ def train_dqn(env, q_net, target_net, optimizer,
             total_reward += reward
 
             if len(buffer) >= min_buffer_size:
+                states, actions, rewards, next_states, dones = buffer.sample(batch_size)
                 states      = torch.tensor(np.array(states), dtype=torch.float32)
                 actions     = torch.tensor(np.array(actions), dtype=torch.int64).unsqueeze(1)
                 rewards     = torch.tensor(np.array(rewards), dtype=torch.float32).unsqueeze(1)
