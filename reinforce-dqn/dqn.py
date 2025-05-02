@@ -17,7 +17,7 @@ def train_dqn(env, q_net, target_net, optimizer,
               episodes=500,
               gamma=0.99,
               batch_size=64,
-              buffer_capacity=100_000,
+              buffer_capacity=100000,
               min_buffer_size=1000,
               epsilon_start=1.0,
               epsilon_end=0.05,
@@ -25,7 +25,8 @@ def train_dqn(env, q_net, target_net, optimizer,
               target_update=100,
               eval_every=50,
               run=None,
-              checkpoint_dir=None):
+              checkpoint_dir=None,
+              device=torch.device("cpu")):
 
     buffer = ReplayBuffer(capacity=buffer_capacity)
     epsilon = epsilon_start
@@ -34,11 +35,12 @@ def train_dqn(env, q_net, target_net, optimizer,
 
     for episode in range(episodes):
         obs, _ = env.reset()
-        obs = torch.tensor(obs, dtype=torch.float32)
+        obs = torch.tensor(obs, dtype=torch.float32, device=device)
         done = False
         total_reward = 0
 
         while not done:
+            # Epsilon-greedy policy
             if random.random() < epsilon:
                 action = env.action_space.sample()
             else:
@@ -46,20 +48,32 @@ def train_dqn(env, q_net, target_net, optimizer,
                     q_values = q_net(obs.unsqueeze(0))
                     action = q_values.argmax().item()
 
-            next_obs, reward, terminated, truncated, _ = env.step(action)
+            next_obs_raw, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
 
-            buffer.push(obs.numpy(), action, reward, next_obs, done)
-            obs = torch.tensor(next_obs, dtype=torch.float32)
+            # Converti in tensore e sposta sul device
+            next_obs = torch.tensor(next_obs_raw, dtype=torch.float32, device=device)
+
+            # Salva su CPU nel buffer
+            buffer.push(
+                obs.cpu().numpy(),
+                action,
+                reward,
+                next_obs.cpu().numpy(),
+                done
+            )
+
+            # Avanza allo stato successivo
+            obs = next_obs
             total_reward += reward
 
             if len(buffer) >= min_buffer_size:
                 states, actions, rewards, next_states, dones = buffer.sample(batch_size)
-                states = torch.tensor(np.array(states), dtype=torch.float32)
-                actions = torch.tensor(np.array(actions), dtype=torch.int64).unsqueeze(1)
-                rewards = torch.tensor(np.array(rewards), dtype=torch.float32).unsqueeze(1)
-                next_states = torch.tensor(np.array(next_states), dtype=torch.float32)
-                dones = torch.tensor(np.array(dones), dtype=torch.float32).unsqueeze(1)
+                states = torch.tensor(np.array(states), dtype=torch.float32).to(device)
+                actions = torch.tensor(np.array(actions), dtype=torch.int64).unsqueeze(1).to(device)
+                rewards = torch.tensor(np.array(rewards), dtype=torch.float32).unsqueeze(1).to(device)
+                next_states = torch.tensor(np.array(next_states), dtype=torch.float32).to(device)
+                dones = torch.tensor(np.array(dones), dtype=torch.float32).unsqueeze(1).to(device)
 
 
                 q_values = q_net(states).gather(1, actions)
@@ -79,7 +93,7 @@ def train_dqn(env, q_net, target_net, optimizer,
             target_net.load_state_dict(q_net.state_dict())
 
         if episode % eval_every == 0:
-            avg_reward, avg_len = evaluate_policy(env, q_net)
+            avg_reward, avg_len = evaluate_policy(env, q_net, device=device)
             if run:
                 run.log({
                     "eval_avg_reward": avg_reward,

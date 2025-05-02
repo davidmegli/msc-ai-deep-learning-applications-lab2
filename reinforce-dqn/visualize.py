@@ -1,3 +1,9 @@
+'''
+Author: David Megli
+Date: 2025-05-02
+File: visualize.py
+Description: Script to visualize simulations from a pretrained checkpoint or save them as videos
+'''
 import os
 import argparse
 import torch

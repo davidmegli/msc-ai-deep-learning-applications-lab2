@@ -10,12 +10,13 @@ import torch
 import wandb
 
 from dqn import train_dqn
-from networks import QNetwork
+from networks import QNetwork, CNNQNetwork
+from preprocess import FrameStacker
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, default='cartpole', choices=['cartpole', 'lunarlander'])
+    parser.add_argument('--env', type=str, default='cartpole', choices=['cartpole', 'lunarlander', 'carracing'])
     parser.add_argument('--episodes', type=int, default=1000)
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--gamma', type=float, default=0.99)
@@ -34,14 +35,43 @@ def parse_args():
 def main():
     args = parse_args()
 
-    env_id = 'CartPole-v1' if args.env == 'cartpole' else 'LunarLander-v3'
-    env = gym.make(env_id)
-    state_dim = env.observation_space.shape[0]
-    action_dim = env.action_space.n
+    # === Environment and Network selection ===
+    if args.env == 'cartpole':
+        env_id = 'CartPole-v1'
+        env = gym.make(env_id)
+        state_dim = env.observation_space.shape[0]
+        action_dim = env.action_space.n
+        device = "cpu" #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    q_net = QNetwork(state_dim, action_dim, args.hidden_dim)
-    target_net = QNetwork(state_dim, action_dim, args.hidden_dim)
-    target_net.load_state_dict(q_net.state_dict())  # Sync initially
+        q_net = QNetwork(state_dim, action_dim, args.hidden_dim)
+        target_net = QNetwork(state_dim, action_dim, args.hidden_dim)
+
+    elif args.env == 'lunarlander':
+        env_id = 'LunarLander-v3'
+        env = gym.make(env_id)
+        state_dim = env.observation_space.shape[0]
+        action_dim = env.action_space.n
+        device = "cpu" #torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        q_net = QNetwork(state_dim, action_dim, args.hidden_dim)
+        target_net = QNetwork(state_dim, action_dim, args.hidden_dim)
+
+    elif args.env == 'carracing':
+        env_id = 'CarRacing-v3'
+        k = 3  # number of stacked frames
+        env = FrameStacker(gym.make(env_id, continuous=False), k=k)
+        input_channels = k
+        action_dim = env.action_space.n
+        
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        q_net = CNNQNetwork(input_channels, action_dim, args.hidden_dim).to(device)
+        target_net = CNNQNetwork(input_channels, action_dim, args.hidden_dim).to(device)
+
+    else:
+        raise ValueError(f"Unsupported environment: {args.env}")
+
+    # === Common setup ===
+    target_net.load_state_dict(q_net.state_dict())
     optimizer = torch.optim.Adam(q_net.parameters(), lr=args.lr)
 
     run = wandb.init(
@@ -65,7 +95,8 @@ def main():
         target_update=args.target_update_freq,
         eval_every=args.eval_every,
         run=run,
-        checkpoint_dir=run.dir
+        checkpoint_dir=run.dir,
+        device=device
     )
 
     run.finish()

@@ -6,7 +6,7 @@ Description: Support functions
 '''
 import torch
 
-def evaluate_policy(env, q_net, episodes=5):
+def evaluate_policy(env, q_net, episodes=5, device='cpu'):
     q_net.eval()
     total_rewards = []
     total_lengths = []
@@ -18,7 +18,7 @@ def evaluate_policy(env, q_net, episodes=5):
         steps = 0
 
         while not done:
-            obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)
+            obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(device)
             with torch.no_grad():
                 action = q_net(obs_tensor).argmax().item()
             obs, reward, terminated, truncated, _ = env.step(action)
