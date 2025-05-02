@@ -1,12 +1,21 @@
+import os
 import argparse
 import torch
 import gymnasium as gym
+from gymnasium.wrappers import RecordVideo
 
 from networks import QNetwork
 from common import load_policy
 
-def visualize(env_id, checkpoint_path, hidden_dim=128, episodes=5):
-    env = gym.make(env_id, render_mode='human')
+def visualize(env_id, checkpoint_path, hidden_dim=128, episodes=5, record_video=False):
+    # Se vogliamo salvare video, impostiamo il wrapper
+    if record_video:
+        os.makedirs("videos", exist_ok=True)
+        env = gym.make(env_id, render_mode='rgb_array')
+        env = RecordVideo(env, video_folder='videos', episode_trigger=lambda ep: True, name_prefix=env_id)
+    else:
+        env = gym.make(env_id, render_mode='human')
+
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
 
@@ -19,6 +28,7 @@ def visualize(env_id, checkpoint_path, hidden_dim=128, episodes=5):
         obs = torch.tensor(obs, dtype=torch.float32)
         done = False
         total_reward = 0
+        steps = 0
 
         while not done:
             with torch.no_grad():
@@ -28,10 +38,13 @@ def visualize(env_id, checkpoint_path, hidden_dim=128, episodes=5):
             done = terminated or truncated
             obs = torch.tensor(obs, dtype=torch.float32)
             total_reward += reward
+            steps += 1
 
-        print(f"Episode {ep + 1}: Reward = {total_reward:.2f}")
+        print(f"[Episode {ep + 1}] Reward: {total_reward:.2f}, Steps: {steps}")
 
     env.close()
+    if record_video:
+        print("📽️ Videos saved to: videos/")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -39,6 +52,7 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint', type=str, required=True)
     parser.add_argument('--hidden_dim', type=int, default=128)
     parser.add_argument('--episodes', type=int, default=5)
+    parser.add_argument('--record_video', action='store_true', help="Set this flag to record videos instead of rendering live.")
     args = parser.parse_args()
 
     env_map = {
@@ -46,4 +60,4 @@ if __name__ == '__main__':
         'lunarlander': 'LunarLander-v3'
     }
 
-    visualize(env_map[args.env], args.checkpoint, args.hidden_dim, args.episodes)
+    visualize(env_map[args.env], args.checkpoint, args.hidden_dim, args.episodes, args.record_video)
