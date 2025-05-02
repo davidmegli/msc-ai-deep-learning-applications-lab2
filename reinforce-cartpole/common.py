@@ -57,7 +57,8 @@ def run_episode(env, policy, maxlen=500):
 
     # Reset the environment and start the episode.
     (obs, info) = env.reset()
-    for i in range(maxlen):
+    i = 0
+    while maxlen is None or i < maxlen:
         # Get the current observation, run the policy and select an action.
         obs = torch.tensor(obs)
         (action, log_prob) = select_action(env, obs, policy)
@@ -70,6 +71,7 @@ def run_episode(env, policy, maxlen=500):
         rewards.append(reward)
         if term or trunc:
             break
+        i += 1
 
     # Return just about everything.
     return (observations, actions, torch.cat(log_probs), rewards)

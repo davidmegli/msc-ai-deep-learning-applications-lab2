@@ -29,8 +29,10 @@ def main(args):
         raise ValueError(f'Unknown environment {args.env}')
     env = gymnasium.make(environment)
 
+    hidden_layers = 2
+    width = 256
     # Make a policy network.
-    policy = PolicyNet(env)
+    policy = PolicyNet(env, n_hidden=hidden_layers, width=width)
 
     policy = load_checkpoint(first_file, policy)
     env_render = gymnasium.make(environment, render_mode='human')

@@ -8,7 +8,7 @@ from common import run_episode, compute_returns, select_action
 # 2. Standardization Baseline
 # 3. Value Baseline (esercizio 3)
 def reinforce(policy, env, run, gamma=0.99, lr=0.02, baseline='std',
-              num_episodes=10, eval_every=10, eval_episodes=5, value_net=None):
+              num_episodes=10, eval_every=10, eval_episodes=5, value_net=None, maxlen=500):
     """
     REINFORCE with optional evaluation every N episodes.
 
@@ -54,7 +54,7 @@ def reinforce(policy, env, run, gamma=0.99, lr=0.02, baseline='std',
         log = {}
 
         # Run an episode of the environment, collect everything needed for policy update.
-        observations, actions, log_probs, rewards = run_episode(env, policy)
+        observations, actions, log_probs, rewards = run_episode(env, policy, maxlen=maxlen)
 
         # Compute the discounted reward for every step of the episode. 
         returns = torch.tensor(compute_returns(rewards, gamma), dtype=torch.float32)

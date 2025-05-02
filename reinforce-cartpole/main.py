@@ -14,7 +14,7 @@ def parse_args():
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
     parser.add_argument('--episodes', type=int, default=1000, help='Number of training episodes')
     parser.add_argument('--eval_every', type=int, default=50, help='Evaluate agent every N episodes')
-    parser.add_argument('--eval_episodes', type=int, default=5, help='Number of episodes to use in each evaluation')
+    parser.add_argument('--eval_episodes', type=int, default=10, help='Number of episodes to use in each evaluation')
     parser.add_argument('--visualize', action='store_true', help='Visualize final agent')
     parser.add_argument('--env', type=str, default='cartpole', help='environment to use (cartpole, lunarlander)')
     parser.set_defaults(visualize=True)
@@ -37,23 +37,28 @@ if __name__ == "__main__":
         }
     )
 
+    maxlen=None
     environment = ''
     if args.env.lower() == 'cartpole':
         environment = 'CartPole-v1'
+        maxlen=500
     elif args.env.lower() == 'lunarlander':
         environment = 'LunarLander-v3'
+        maxlen=500
     else:
         raise ValueError(f'Unknown environment {args.env}')
 
     # Instantiate the Cartpole environment (no visualization).
     env = gymnasium.make(environment)
-    # Make a policy network.
-    policy = PolicyNet(env, n_hidden=1)
 
+    hidden_layers = 2
+    width = 256
+    # Make a policy network.
+    policy = PolicyNet(env, n_hidden=hidden_layers, width=width)
     # If using value baseline, also create a value network
     if args.baseline == 'value':
         from networks import ValueNet
-        value_net = ValueNet(env, n_hidden=1)
+        value_net = ValueNet(env, n_hidden=hidden_layers, width=width)
     else:
         value_net = None
 
@@ -69,13 +74,14 @@ if __name__ == "__main__":
         gamma=args.gamma,
         eval_every=args.eval_every,
         eval_episodes=args.eval_episodes,
-        value_net=value_net)
+        value_net=value_net,
+        maxlen=maxlen)
 
     # And optionally run the final agent for a few episodes.
     if args.visualize:
         env_render = gymnasium.make(environment, render_mode='human')
         for _ in range(10):
-            run_episode(env_render, policy)
+            run_episode(env_render, policy,maxlen)
 
         # Close the visualization environment.
         env_render.close()
