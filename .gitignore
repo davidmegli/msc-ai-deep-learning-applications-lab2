@@ -2,6 +2,6 @@
 __pycache__/
 /outputs
 /data
-/wandb
 /runs
 /ignore
+*/wandb

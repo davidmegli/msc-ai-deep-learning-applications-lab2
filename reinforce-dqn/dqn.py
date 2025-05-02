@@ -7,16 +7,29 @@ Description: Main Deep Q-Network Algorithm (training loop)
 import torch
 import torch.nn.functional as F
 import random
-from collections import namedtuple
-from common import run_episode, evaluate_policy
+import numpy as np
+
+from common import evaluate_policy, save_checkpoint
 from replay_buffer import ReplayBuffer
 
-def dqn(env, q_net, target_net, optimizer, episodes=500, gamma=0.99, batch_size=64,
-        buffer_capacity=100_000, min_buffer_size=1000, epsilon_start=1.0,
-        epsilon_end=0.05, epsilon_decay=0.995, target_update=100, eval_every=50, run=None):
+
+def train_dqn(env, q_net, target_net, optimizer,
+              episodes=500,
+              gamma=0.99,
+              batch_size=64,
+              buffer_capacity=100_000,
+              min_buffer_size=1000,
+              epsilon_start=1.0,
+              epsilon_end=0.05,
+              epsilon_decay=0.995,
+              target_update=100,
+              eval_every=50,
+              run=None,
+              checkpoint_dir=None):
 
     buffer = ReplayBuffer(capacity=buffer_capacity)
     epsilon = epsilon_start
+    best_reward = float('-inf')
     episode_rewards = []
 
     for episode in range(episodes):
@@ -41,12 +54,12 @@ def dqn(env, q_net, target_net, optimizer, episodes=500, gamma=0.99, batch_size=
             total_reward += reward
 
             if len(buffer) >= min_buffer_size:
-                states, actions, rewards, next_states, dones = buffer.sample(batch_size)
-                states = torch.tensor(states, dtype=torch.float32)
-                actions = torch.tensor(actions, dtype=torch.int64).unsqueeze(1)
-                rewards = torch.tensor(rewards, dtype=torch.float32).unsqueeze(1)
-                next_states = torch.tensor(next_states, dtype=torch.float32)
-                dones = torch.tensor(dones, dtype=torch.float32).unsqueeze(1)
+                states      = torch.tensor(np.array(states), dtype=torch.float32)
+                actions     = torch.tensor(np.array(actions), dtype=torch.int64).unsqueeze(1)
+                rewards     = torch.tensor(np.array(rewards), dtype=torch.float32).unsqueeze(1)
+                next_states = torch.tensor(np.array(next_states), dtype=torch.float32)
+                dones       = torch.tensor(np.array(dones), dtype=torch.float32).unsqueeze(1)
+
 
                 q_values = q_net(states).gather(1, actions)
                 with torch.no_grad():
@@ -67,7 +80,18 @@ def dqn(env, q_net, target_net, optimizer, episodes=500, gamma=0.99, batch_size=
         if episode % eval_every == 0:
             avg_reward, avg_len = evaluate_policy(env, q_net)
             if run:
-                run.log({"eval_avg_reward": avg_reward, "eval_avg_length": avg_len})
+                run.log({
+                    "eval_avg_reward": avg_reward,
+                    "eval_avg_length": avg_len,
+                    "epsilon": epsilon,
+                    "loss": loss.item() if 'loss' in locals() else None
+                })
             print(f"[Ep {episode}] Eval Avg Reward: {avg_reward:.2f}, Epsilon: {epsilon:.3f}")
+
+            if checkpoint_dir:
+                save_checkpoint("LATEST", q_net, target_net, optimizer, episode, checkpoint_dir)
+                if avg_reward > best_reward:
+                    best_reward = avg_reward
+                    save_checkpoint("BEST", q_net, target_net, optimizer, episode, checkpoint_dir)
 
     return episode_rewards

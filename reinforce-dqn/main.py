@@ -40,6 +40,9 @@ def main():
     action_dim = env.action_space.n
 
     q_net = QNetwork(state_dim, action_dim, args.hidden_dim)
+    target_net = QNetwork(state_dim, action_dim, args.hidden_dim)
+    target_net.load_state_dict(q_net.state_dict())  # Sync initially
+    optimizer = torch.optim.Adam(q_net.parameters(), lr=args.lr)
 
     run = wandb.init(
         project=args.project,
@@ -50,17 +53,19 @@ def main():
     train_dqn(
         env=env,
         q_net=q_net,
-        run=run,
+        target_net=target_net,
+        optimizer=optimizer,
         episodes=args.episodes,
-        lr=args.lr,
         gamma=args.gamma,
         batch_size=args.batch_size,
-        buffer_size=args.buffer_size,
-        eps_start=args.eps_start,
-        eps_end=args.eps_end,
-        eps_decay=args.eps_decay,
-        target_update_freq=args.target_update_freq,
-        eval_every=args.eval_every
+        buffer_capacity=args.buffer_size,
+        epsilon_start=args.eps_start,
+        epsilon_end=args.eps_end,
+        epsilon_decay=args.eps_decay,
+        target_update=args.target_update_freq,
+        eval_every=args.eval_every,
+        run=run,
+        checkpoint_dir=run.dir
     )
 
     run.finish()
