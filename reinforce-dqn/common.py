@@ -75,3 +75,9 @@ def load_checkpoint(name, q_net, target_net, optimizer, path, device='cpu'):
     target_net.load_state_dict(checkpoint['target_net_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     return checkpoint['step']
+
+def load_policy(path, q_net):
+    checkpoint = torch.load(path, map_location=torch.device('cpu'))
+    q_net.load_state_dict(checkpoint['q_net_state_dict'])
+    print(f"✅ Loaded policy from {path}")
+    return q_net
