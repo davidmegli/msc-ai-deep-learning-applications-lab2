@@ -1,4 +1,4 @@
-# A starter project for REINFORCE applied to Cartpole
+# David Megli - Deep Learning Applications Lab 2
 
 This project is an implementation of Lab 2 for the Deep Learning Applications course in the Master's Degree in Artificial Intelligence at the University of Florence.
 
