@@ -52,3 +52,7 @@ To train the agent without using a baseline and visualize the final agent, you c
 wandb login
 python main.py --baseline none --visualize
 ```
+
+
+## Results
+You can find the qualitative results in this [YouTube video](https://youtu.be/pdkXgKGKqQI)
