@@ -1,6 +1,6 @@
 # A starter project for REINFORCE applied to Cartpole
 
-The repository contains a very simple, inefficient, and likely *buggy* implementation of REINFORCE. I tried to keep it simple, but at the same time implement logging via Weights and Biases and a minimal command line interface. REINFORCE is a policy gradient method that optimizes the policy directly. This implementation is built on top of the Farama Gymnasium library for creating the CartPole environment and weighs the benefits of using a standardization baseline to help reduce variance in training.
+This project is an implementation of Lab 2 for the Deep Learning Applications course in the Master's Degree in Artificial Intelligence at the University of Florence.
 
 ## Requirements
 
