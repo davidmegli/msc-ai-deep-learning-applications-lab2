@@ -19,10 +19,11 @@ My version of the reinforce algorithm can be found in ```reinforce-cartpole/rein
 #### Description
 The standardized baseline was already implemented in ```reinforce-cartpole/reinforce.py```. 
 I implemented the ValueNet in ```reinforce-cartpole/networks.py```, which is a deep neural network with the same structure as the PolicyNet, but is used to estimate the value function, which can be used as a baseline in the Reinforce algorithm.
-
-Here we can appreciate the quantitative comparison between the different baselines evaluated on the Cartpole environment. The reported metric is the average episode length evaluated every N training episodes on M episodes.
+#### Results
+From the next plot we can appreciate the quantitative comparison between the different baselines evaluated on the Cartpole environment. The reported metric is the average episode length evaluated every N training episodes on M episodes.
 We can see that without any baseline the network is not even able to learn to keep the pole erect after 5000 episodes, insted we see that after about 2000 episodes the average episode length even gets worse!
-While the standard
+The std baseline, which consists of subtracting the average return and dividing by the variance of the returns, significantly improves the performance, enabling the network to learn to keep the pole erect.
+The Value baseline, which uses the Value Network to estimate the value function to use it as a baseline, improves even more the performance, making the network converge faster to the maximum episode length and increasing stability during training.
 ![Reinforce Cartpole baseline comparison](assets/reinforce-cartpole-baseline-comparison.png)
 ## Exercise 3
 ### Exercise 3.1
