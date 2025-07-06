@@ -27,10 +27,25 @@ The Value baseline, which uses the Value Network to estimate the value function 
 ![Reinforce Cartpole baseline comparison](assets/reinforce-cartpole-baseline-comparison.png)
 ## Exercise 3
 ### Exercise 3.1
+In this exercises I solved the Lunar Lander Environment using the Reinforce algorithm, the PolicyNet and the ValueNet implemented in the previous exercise.
+
+In my first attempts I tried to train the network for 5000 or 10000 episodes, but the network didn't seem to learn how to make the spaceship land. Indeed it seemed like the network just learned to keep the spaseship flying, to not receive the big negative reward to crash on the ground, and the learning curve had a plateau, as you can see from the following 2 plots, reporting the average evaluated length and reward.
+The plateau in the average length, which increases instead of decreasing, shows indeed that the network learns to keep the spaceship flying as long as possible, using as less as possible fuel. Also, the episode is considered solved if the score is higher than 200, and the reward for landing on the objective is 100, but in the second plot we can see that the reward doesn't even reach 50, while with lower learning rate it remains negative.
+![Reinforce Lunar Lander avg episode length bad](assets/reinforce-lunar-lander-length-bad.png)
+![Reinforce Lunar Lander avg reward bad](assets/reinforce-lunar-lander-reward-bad.png)
+These are just a few examples of the attempts I made, with different settings. As you can see I also tried to lower the learning rate, hoping that instead of just learning to keep the spaseship flying, the network would have had more time to explore different actions and discovered the big reward it would get for landing on the objective without crashing.
+
+After these failed attempts, I thought about letting the network run for many more episodes, hoping that it would sooner or later land on the objective (I also tried to lower the learning rate).
+And that's actually what happened!
+As you can see from the following 2 plots, after about 32000 episodes there is a drop of the episode length and an upward spike in the reward.
+This probably means that around the episode 32000, in this particular case, the spaceship landed for the first time, and the network started to learn how to get an higher reward.
+Indeed from this point the average episode length drops from 500 to around 200, and the reward converges to 270, surpassing 200, considered as solved, from around episode 39950, so after about 7000 episodes from the (supposed) first landing.
 ![Reinforce Lunar Lander avg episode length](assets/reinforce-lunar-lander-length.png)
 ![Reinforce Lunar Lander avg reward](assets/reinforce-lunar-lander-reward.png)
+Note: I probably could have used a higher learning rate, and just let the network train for enough episodes.
 
-### Exercise 3.2 & 3.3
+### Exercise 3.2
+In this exercise I implemented the Deep Q-Learning algorithm to solve Cartpole and Lunar Lander.
 ![DQN episode length](assets/DQN-length.png)
 ![DQN reward](assets/DQN-reward.png)
 
