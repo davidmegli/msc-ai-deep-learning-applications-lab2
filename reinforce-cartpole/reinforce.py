@@ -11,6 +11,12 @@ def reinforce(policy, env, run, gamma=0.99, lr=0.02, baseline='std',
               num_episodes=10, eval_every=10, eval_episodes=5, value_net=None, maxlen=500):
     """
     REINFORCE with optional evaluation every N episodes.
+    This function implements the REINFORCE algorithm for training a policy network
+    in a given environment. It supports different types of baselines for variance reduction
+    and evaluates the agent's performance at specified intervals.
+    The function uses the Adam optimizer for training the policy network and optionally
+    a value network if a value baseline is selected.
+    It logs the training progress and evaluation metrics to Weights & Biases (wandb).
 
     Args:
         policy: The policy network to be trained.
@@ -18,7 +24,7 @@ def reinforce(policy, env, run, gamma=0.99, lr=0.02, baseline='std',
         run: wandb run object.
         gamma: Discount factor for future rewards.
         lr: Learning rate.
-        baseline: Type of baseline ('none', 'std').
+        baseline: Type of baseline ('none', 'std', 'value').
         num_episodes: Total number of training episodes.
         eval_every: Evaluate agent every N episodes.
         eval_episodes: Number of evaluation episodes per evaluation cycle.

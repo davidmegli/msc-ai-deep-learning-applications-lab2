@@ -9,24 +9,6 @@ This project is an implementation of Lab 2 for the Deep Learning Applications co
 - Gymnasium
 - WandB (Weights and Biases)
 
-## Installation
-
-Clone the repository and install the requirements:
-
-```bash
-git clone https://gitlab.com/bagdanov/reinforce-cartpole.git
-cd reinforce-cartpole
-conda create --name reinforce-cartpole --file requirements.txt
-conda activate reinforce-cartpole
-```
-
-If you prefer, you can directly create the environment with `conda` like so:
-
-```bash
-conda create -n reinforce-cartpole -c conda-forge gymnasium pytorch matplotlib pygame wandb
-conda activate reinforce-cartpole
-```
-
 ## Usage
 
 Run the main training script with the following command:
