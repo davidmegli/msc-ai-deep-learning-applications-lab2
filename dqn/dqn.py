@@ -27,6 +27,36 @@ def train_dqn(env, q_net, target_net, optimizer,
               run=None,
               checkpoint_dir=None,
               device=torch.device("cpu")):
+    """
+    Train a Deep Q-Network (DQN) on the given environment.
+    
+    This function implements the DQN algorithm, which uses a replay buffer to store experiences
+    and a target network to stabilize training. The agent interacts with the environment,
+    collects experiences, and updates the Q-network based on sampled batches from the replay buffer.
+    The training process includes epsilon-greedy action selection, experience replay, and periodic
+    evaluation of the policy.
+
+    Args:
+        env: The environment to train the agent on.
+        q_net: The Q-network to be trained.
+        target_net: The target Q-network for stability.
+        optimizer: Optimizer for the Q-network.
+        episodes: Total number of training episodes.
+        gamma: Discount factor for future rewards.
+        batch_size: Size of the batch sampled from the replay buffer.
+        buffer_capacity: Maximum capacity of the replay buffer.
+        min_buffer_size: Minimum number of experiences in the buffer before training starts.
+        epsilon_start: Initial value of epsilon for epsilon-greedy action selection.
+        epsilon_end: Final value of epsilon after decay.
+        epsilon_decay: Decay factor for epsilon.
+        target_update: Frequency of updating the target network.
+        run: WandB run object for logging.
+        checkpoint_dir: Directory to save model checkpoints.
+        device: Device to run the training on (CPU or GPU).
+
+    Returns:
+        episode_rewards: List of total rewards for each episode.
+    """
 
     buffer = ReplayBuffer(capacity=buffer_capacity)
     epsilon = epsilon_start
