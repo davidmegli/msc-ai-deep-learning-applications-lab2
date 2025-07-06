@@ -1,3 +1,6 @@
+'''
+Author: David Megli
+'''
 import argparse
 import wandb
 import gymnasium

@@ -1,3 +1,6 @@
+'''
+Author: David Megli
+'''
 import argparse
 import gymnasium
 from gymnasium.wrappers import RecordVideo

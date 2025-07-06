@@ -1,12 +1,13 @@
+'''
+Author: David Megli
+'''
+
 import torch
 import wandb
 from networks import save_checkpoint
 from common import run_episode, compute_returns, select_action
 
-# è gia implementato Standardization Baseline (- media diviso varianza)
-# 1. No Baseline
-# 2. Standardization Baseline
-# 3. Value Baseline (esercizio 3)
+
 def reinforce(policy, env, run, gamma=0.99, lr=0.02, baseline='std',
               num_episodes=10, eval_every=10, eval_episodes=5, value_net=None, maxlen=500):
     """
@@ -76,7 +77,7 @@ def reinforce(policy, env, run, gamma=0.99, lr=0.02, baseline='std',
         if running_rewards[-1] > best_return:
             save_checkpoint('BEST', policy, opt, wandb.run.dir)
 
-        # Basline returns.
+        # Baseline returns.
         if baseline == 'none':
             base_returns = returns
         elif baseline == 'std': # Standardization: subtracting mean, dividing by std
@@ -111,6 +112,7 @@ def reinforce(policy, env, run, gamma=0.99, lr=0.02, baseline='std',
             total_rewards = []
             episode_lengths = []
 
+            # Evaluate the agent for eval_episodes episodes
             for _ in range(eval_episodes):
                 obs, info = env.reset()
                 rewards = []
