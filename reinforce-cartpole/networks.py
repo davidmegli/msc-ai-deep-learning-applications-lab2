@@ -47,7 +47,7 @@ def load_checkpoint(fname, model, opt=None):
 # A simple nn.Module for a variable depth and width MLP.
 class PolicyNet(nn.Module):
     """
-    A simple, but generic, policy network with a variable number of hidden layers.
+    Policy network with variable number of hidden layers.
 
     Attributes:
         hidden (nn.Sequential): A sequential container for all hidden layers.
@@ -86,6 +86,11 @@ class PolicyNet(nn.Module):
         return s
 
 class ValueNet(nn.Module):
+    """
+    Value network for estimating the value of states.
+    This network can be used as a baseline in the REINFORCE algorithm to reduce variance
+    in the policy gradient estimates.
+    """
     def __init__(self, env, n_hidden=1, width=128):
         super().__init__()
         hidden_layers = [nn.Linear(env.observation_space.shape[0], width), nn.ReLU()]

@@ -19,7 +19,7 @@ def parse_args():
     parser.add_argument('--eval_every', type=int, default=50, help='Evaluate agent every N episodes')
     parser.add_argument('--eval_episodes', type=int, default=10, help='Number of episodes to use in each evaluation')
     parser.add_argument('--visualize', action='store_true', help='Visualize final agent')
-    parser.add_argument('--env', type=str, default='cartpole', help='environment to use (cartpole, lunarlander)')
+    parser.add_argument('--env', type=str, default='cartpole', help='Environment to use (cartpole, lunarlander)')
     parser.set_defaults(visualize=True)
     return parser.parse_args()
 

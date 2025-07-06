@@ -13,7 +13,8 @@ def reinforce(policy, env, run, gamma=0.99, lr=0.02, baseline='std',
     """
     REINFORCE with optional evaluation every N episodes.
     This function implements the REINFORCE algorithm for training a policy network
-    in a given environment. It supports different types of baselines for variance reduction
+    in a given environment.
+    It supports different types of baselines for variance reduction
     and evaluates the agent's performance at specified intervals.
     The function uses the Adam optimizer for training the policy network and optionally
     a value network if a value baseline is selected.
